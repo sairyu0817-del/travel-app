@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>旅行タイムスケジュール</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #f5f6f8;
+      margin: 0;
+      padding: 16px;
+    }
+    h1 {
+      font-size: 18px;
+      margin-bottom: 12px;
+    }
+    .item {
+      background: #fff;
+      border-radius: 12px;
+      padding: 14px;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      transition: transform 0.2s ease;
+    }
+    .time {
+      font-weight: bold;
+      width: 60px;
+    }
+    .text {
+      flex: 1;
+      margin-left: 12px;
+    }
+  </style>
+</head>
+<body>
+
+<h1>📍 今日の予定</h1>
+<div id="list"></div>
+
+<script>
+  const listEl = document.getElementById("list");
+
+  let items = JSON.parse(localStorage.getItem("schedule") || "[]");
+
+  if (items.length === 0) {
+    items = [
+      { time: "08:30", text: "ホテル出発" },
+      { time: "10:00", text: "観光地到着" },
+      { time: "12:00", text: "ランチ" }
+    ];
+    localStorage.setItem("schedule", JSON.stringify(items));
+  }
+
+  items.sort((a, b) => a.time.localeCompare(b.time));
+
+  function render() {
+    listEl.innerHTML = "";
+    items.forEach((item, index) => {
+      const el = document.createElement("div");
+      el.className = "item";
+      el.innerHTML = `
+        <div class="time">${item.time}</div>
+        <div class="text">${item.text}</div>
+      `;
+
+      let startX = 0;
+      el.addEventListener("touchstart", e => {
+        startX = e.touches[0].clientX;
+      });
+
+      el.addEventListener("touchend", e => {
+        const endX = e.changedTouches[0].clientX;
+        if (startX - endX > 80) {
+          items.splice(index, 1);
+          localStorage.setItem("schedule", JSON.stringify(items));
+          render();
+        }
+      });
+
+      listEl.appendChild(el);
+    });
+  }
+
+  render();
+</script>
+
+</body>
+</html>
